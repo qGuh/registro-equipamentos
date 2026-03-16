@@ -10,7 +10,15 @@ module.exports = (req, res, next) => {
     }
 
     const payload = jwt.verify(token, process.env.JWT_SECRET || 'dev_secret');
-    req.user = payload; // { id, perfil }
+
+    // payload esperado: { id, login, nome, perfil }
+    req.user = {
+      id: payload.id,
+      login: payload.login || null,
+      nome: payload.nome || null,
+      perfil: payload.perfil || payload.role || null,
+    };
+
     next();
   } catch {
     return res.status(401).json({ message: 'Token inválido.' });

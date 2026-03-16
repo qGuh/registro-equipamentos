@@ -26,24 +26,28 @@ exports.login = async (req, res) => {
 
     const user = rows[0];
 
-    // compara com hash (obrigatório nesta versão)
     const ok = user.senha_hash ? await bcrypt.compare(senha, user.senha_hash) : false;
     if (!ok) {
       return res.status(401).json({ message: 'Credenciais inválidas.' });
     }
 
-    const token = jwt.sign(
-      { id: user.id, perfil: user.tipo_perfil },
-      process.env.JWT_SECRET,
-      { expiresIn: '8h' }
-    );
+    // >>> Payload agora inclui login e nome (essenciais p/ logs)
+    const payload = {
+      id: user.id,
+      login: user.login,
+      nome: user.nome,
+      perfil: user.tipo_perfil
+    };
+
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '8h' });
 
     return res.json({
       token,
       usuario: {
         id: user.id,
         nome: user.nome,
-        email: user.login,       // usamos o login como “email”
+        login: user.login,
+        email: user.login,       // mantido para compatibilidade
         perfil: user.tipo_perfil,
       },
     });
@@ -56,7 +60,7 @@ exports.login = async (req, res) => {
 exports.me = async (req, res) => {
   try {
     const [rows] = await pool.query(
-      `SELECT id, nome, login AS email, tipo_perfil
+      `SELECT id, nome, login AS email, login, tipo_perfil
          FROM usuarios_sistema
         WHERE id = ?
         LIMIT 1`,
@@ -72,6 +76,7 @@ exports.me = async (req, res) => {
       id: u.id,
       nome: u.nome,
       email: u.email,
+      login: u.login,
       perfil: u.tipo_perfil,
     });
   } catch (err) {

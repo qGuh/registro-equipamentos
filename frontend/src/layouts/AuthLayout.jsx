@@ -1,4 +1,4 @@
-// src/pages/AuthLayout.jsx
+// src/layouts/AuthLayout.jsx
 import { Outlet, Navigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import api from '../services/api';
@@ -10,22 +10,19 @@ export default function AuthLayout() {
   useEffect(() => {
     const token = localStorage.getItem('token');
 
-    // sem token -> vai pro login
     if (!token) {
       setOk(false);
       setLoading(false);
       return;
     }
 
-    // valida token e carrega o usuário
     const validate = async () => {
       try {
         const { data } = await api.get('/auth/me');
-        // guarda para usar no header/menus/etc.
         localStorage.setItem('user', JSON.stringify(data));
         setOk(true);
-      } catch {
-        // token inválido/expirado
+      } catch (error) {
+        console.error('Erro ao validar sessão:', error);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         setOk(false);
@@ -45,6 +42,5 @@ export default function AuthLayout() {
     );
   }
 
-  // se ok, libera as rotas protegidas
   return ok ? <Outlet /> : <Navigate to="/" replace />;
 }

@@ -1,14 +1,21 @@
+// backend/src/routes/contasAcessoRoutes.js
 const express = require('express');
 const router = express.Router();
+
+const authMiddleware = require('../middlewares/authMiddleware');
+const requireAdmin = require('../middlewares/requireAdmin');
 const contaAcessoController = require('../controllers/contaAcessoController');
-const authMiddleware = require('../middlewares/auth');
 
-router.use(authMiddleware); // protege todas as rotas abaixo
+// 🔒 todas precisam de login
+router.use(authMiddleware);
 
+// ✅ listar + ver detalhes: qualquer usuário logado
 router.get('/', contaAcessoController.listar);
 router.get('/:id', contaAcessoController.buscarPorId);
-router.post('/', contaAcessoController.criar);
-router.put('/:id', contaAcessoController.atualizar);
-router.delete('/:id', contaAcessoController.excluir);
+
+// ✅ criar/editar/excluir: somente admin
+router.post('/', requireAdmin, contaAcessoController.criar);
+router.put('/:id', requireAdmin, contaAcessoController.atualizar);
+router.delete('/:id', requireAdmin, contaAcessoController.excluir);
 
 module.exports = router;

@@ -1,50 +1,50 @@
 // src/components/DashboardLayout.jsx
-import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { useMemo, useState } from 'react'
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { useMemo, useState } from 'react';
 
 export default function DashboardLayout() {
-  const navigate = useNavigate()
-  const [open, setOpen] = useState(true) // sidebar aberta no desktop
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(true);
 
-  // Lê usuário salvo pelo AuthLayout (/auth/me)
   const user = useMemo(() => {
     try {
-      return JSON.parse(localStorage.getItem('user') || 'null')
+      return JSON.parse(localStorage.getItem('user') || 'null');
     } catch {
-      return null
+      return null;
     }
-  }, [])
+  }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    navigate('/')
-  }
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/');
+  };
 
   const linkBase =
-    'px-3 py-2 rounded-md transition hover:bg-gray-800 hover:text-white'
-  const linkActive = 'bg-red-600 text-white hover:bg-red-700'
+    'px-3 py-2 rounded-md transition hover:bg-gray-800 hover:text-white';
+  const linkActive = 'bg-red-600 text-white hover:bg-red-700';
 
-  const displayName = user?.nome || 'Usuário'
-  const displayPerfil = user?.perfil || null
+  const displayName = user?.nome || 'Usuário';
+  const displayPerfil = user?.perfil || null;
   const initials = (user?.nome || 'U')
     .split(' ')
     .map((n) => n[0])
     .join('')
     .slice(0, 2)
-    .toUpperCase()
+    .toUpperCase();
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
+    // ✅ trava o scroll do body e controla o scroll no conteúdo
+    <div className="flex h-screen overflow-hidden bg-gray-100">
+      {/* Sidebar fixa */}
       <aside
         className={`${
           open ? 'w-64' : 'w-0 md:w-16'
-        } bg-gray-900 text-gray-300 transition-all duration-200 overflow-hidden flex flex-col justify-between`}
+        } h-screen bg-gray-900 text-gray-300 transition-all duration-200 overflow-hidden flex flex-col justify-between`}
       >
         <div className="p-4">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-white">SISTEMA-TI</h2>
+            <h2 className="text-xl font-bold text-white">Menu</h2>
             <button
               className="md:hidden text-gray-300"
               onClick={() => setOpen(false)}
@@ -53,6 +53,10 @@ export default function DashboardLayout() {
               ✕
             </button>
           </div>
+                      {/* SEÇÃO TIS */}
+            <div className="mt-4 mb-1 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+              Gestão TI
+            </div>
 
           <nav className="flex flex-col gap-1">
             <NavLink
@@ -63,6 +67,7 @@ export default function DashboardLayout() {
             >
               Dashboard
             </NavLink>
+
             <NavLink
               to="/colaboradores"
               className={({ isActive }) =>
@@ -71,6 +76,7 @@ export default function DashboardLayout() {
             >
               Colaboradores
             </NavLink>
+
             <NavLink
               to="/equipamentos"
               className={({ isActive }) =>
@@ -79,6 +85,7 @@ export default function DashboardLayout() {
             >
               Equipamentos
             </NavLink>
+
             <NavLink
               to="/contas"
               className={({ isActive }) =>
@@ -87,13 +94,46 @@ export default function DashboardLayout() {
             >
               Contas de Acesso
             </NavLink>
+
             <NavLink
-              to="/manutencao"
+              to="/manutencoes"
               className={({ isActive }) =>
                 `${linkBase} ${isActive ? linkActive : ''}`
               }
             >
               Manutenção
+            </NavLink>
+
+            {/* SEÇÃO QUALIDADE */}
+            <div className="mt-4 mb-1 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+              Qualidade
+            </div>
+
+            <NavLink
+              to="/qualidade/dashboard"
+              className={({ isActive }) =>
+                `${linkBase} ${isActive ? linkActive : ''}`
+              }
+            >
+              Dashboard
+            </NavLink>
+
+            <NavLink
+              to="/qualidade/indicadores"
+              className={({ isActive }) =>
+                `${linkBase} ${isActive ? linkActive : ''}`
+              }
+            >
+              Indicadores
+            </NavLink>
+
+            <NavLink
+              to="/qualidade/lancamentos"
+              className={({ isActive }) =>
+                `${linkBase} ${isActive ? linkActive : ''}`
+              }
+            >
+              Lançamentos
             </NavLink>
           </nav>
         </div>
@@ -109,9 +149,9 @@ export default function DashboardLayout() {
       </aside>
 
       {/* Conteúdo */}
-      <div className="flex-1 flex flex-col">
-        {/* Header topo */}
-        <header className="bg-white shadow flex items-center justify-between px-4 h-14">
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Header (fixo) */}
+        <header className="bg-white shadow flex items-center justify-between px-4 h-14 shrink-0">
           <button
             className="md:hidden border px-3 py-1 rounded"
             onClick={() => setOpen(true)}
@@ -122,7 +162,6 @@ export default function DashboardLayout() {
 
           <h1 className="text-gray-800 font-semibold">Painel de Controle</h1>
 
-          {/* Usuário autenticado (dinâmico) */}
           <div className="flex items-center gap-3 text-sm text-gray-700">
             <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold">
               {initials}
@@ -136,10 +175,11 @@ export default function DashboardLayout() {
           </div>
         </header>
 
-        <main className="flex-1 p-6">
+        {/* ✅ Só o conteúdo rola */}
+        <main className="flex-1 overflow-y-auto p-6">
           <Outlet />
         </main>
       </div>
     </div>
-  )
+  );
 }

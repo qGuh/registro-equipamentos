@@ -1,14 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const controller = require('../controllers/pecaReposicaoController');
-const autenticar = require('../middlewares/authMiddleware');
 
-router.use(autenticar);
+const auth = require('../middlewares/authMiddleware');
+const requireAdmin = require('../middlewares/requireAdmin');
+const ctrl = require('../controllers/pecaReposicaoController');
 
-router.get('/', controller.listar);
-router.get('/:id', controller.buscarPorId);
-router.post('/', controller.criar);
-router.put('/:id', controller.atualizar);
-router.delete('/:id', controller.excluir);
+router.use(auth);
+
+// leitura
+router.get('/', ctrl.listar);
+router.get('/export', ctrl.exportarCsv);
+router.get('/:id', ctrl.obterPorId);
+
+// escrita (admin)
+router.post('/', requireAdmin, ctrl.criar);
+router.put('/:id', requireAdmin, ctrl.atualizar);
+router.delete('/:id', requireAdmin, ctrl.remover);
 
 module.exports = router;
